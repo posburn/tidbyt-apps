@@ -1,3 +1,5 @@
+# Custom Marquee 'widget'
+
 Scroll text vertically in your Tidbyt apps with this custom marquee code.
 
 Features:
@@ -5,14 +7,17 @@ Features:
 * Use in animations
 * Supports centered text
 * Add a simple drop shadow
+* Simple support for recongizing hyphenation
 
-See the custommarquee.star file for an example of how to include the code into your own application.
+See the [custommarquee.star](https://github.com/posburn/tidbyt-apps/blob/main/CustomMarquee/custommarquee.star) file for an example of how to use the code.
 
-### Simple with initial delay
+### Examples:
+
+#### Simple with initial delay:
 ![](https://github.com/posburn/tidbyt-apps/blob/main/CustomMarquee/default.gif)
 
-### Centered
+#### Centered:
 ![](https://github.com/posburn/tidbyt-apps/blob/main/CustomMarquee/centered.gif)
 
-### Centered with drop shadow
+#### Centered with drop shadow:
 ![](https://github.com/posburn/tidbyt-apps/blob/main/CustomMarquee/centered-shadow.gif)
