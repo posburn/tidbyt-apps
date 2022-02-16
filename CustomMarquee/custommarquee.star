@@ -12,8 +12,6 @@ def main(config):
     sample = "Good thing the body doesn't contain any of this second-lightest gas, otherwise you might float away"
     rate = 100
 
-    # TODO: make rate a param, move everything into the custom marquee function?
-
     return render.Root(
         delay = rate,
         child = render.Stack(
