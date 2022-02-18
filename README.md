@@ -3,7 +3,7 @@ Applications and custom code for the [Tidbyt](https://tidbyt.com)
 ## Custom Marquee 'widget'
 Code you can use in your Tidbyt apps, in place of the marquee widget, to scroll text vertically. It has some additional features like delay before scrolling and other fun stuff.
 
-![](https://github.com/posburn/tidbyt-apps/blob/main/CustomMarquee/centered-shadow.gif)
+![](https://github.com/posburn/tidbyt-apps/blob/main/CustomMarquee/centered.gif)
 
 # Jeopardy
 Play Jeopardy on your Tidbyt!
