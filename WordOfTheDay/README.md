@@ -12,7 +12,7 @@ Supports 13 different color themes. Some examples:
 ![](https://github.com/posburn/tidbyt-apps/blob/main/WordOfTheDay/Themes/Thistle.png)
 
 ### Orange Red
-![](https://github.com/posburn/tidbyt-apps/blob/main/WordOfTheDay/Themes/Orange\ Red.png)
+![](https://github.com/posburn/tidbyt-apps/blob/main/WordOfTheDay/Themes/Orange-Red.png)
 
 ### Redwood
 ![](https://github.com/posburn/tidbyt-apps/blob/main/WordOfTheDay/Themes/Redwood.png)
