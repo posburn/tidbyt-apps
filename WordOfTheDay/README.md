@@ -19,3 +19,6 @@ Supports 13 different color themes. Some examples:
 
 ### Coast
 ![](https://github.com/posburn/tidbyt-apps/blob/main/WordOfTheDay/Themes/Coast.png)
+
+
+You can find screenshots of all of the themes in the [Themes](https://github.com/posburn/tidbyt-apps/blob/main/WordOfTheDay/Themes) folder.
