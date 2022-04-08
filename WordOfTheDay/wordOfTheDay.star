@@ -31,12 +31,14 @@ load("render.star", "render")
 load("http.star", "http")
 load("re.star", "re")
 load("cache.star", "cache")
+load("encoding/json.star", "json")
+load("schema.star", "schema")
 
 # Constants
-CACHE_KEY = "saved_doc"
+CACHE_KEY = "wordOfTheDay-saved_doc"
 SITE_URL = "https://www.merriam-webster.com/word-of-the-day"
 
-def main():
+def main(config):
     """
     Displays the word of the day and its definition from the Merriam-Webster website
 
@@ -47,12 +49,17 @@ def main():
 
     """
 
+    # Config
+    theme_number = get_cfg_value(config, "theme", 0)
+
     # Check the cache first
     doc_cached = cache.get(CACHE_KEY)
     if doc_cached != None:
+        print("Using cached data")
         doc = doc_cached
     else:
         # Otherwise fetch the web page
+        print("Cache miss")
         rep = http.get(SITE_URL)
         if rep.status_code != 200:
             # Fail silently and display nothing
@@ -111,22 +118,24 @@ def main():
             ]
         )
 
+    theme = THEME[theme_number]
     return render.Root(
         delay = 100,
         child = render.Padding(
             child = render.Column(
                 children = [
-                    render.Text(content = word),
-                    line(width = 64, height = 2, color = "771122FF", step = 3),
+                    render.Text(content = word, color = theme["title"]),
+                    line(width = 64, height = 2, color = theme["line"], step = 3),
                     render.Padding(pad = (0, 1, 0, 0),                     
                         child = render.Animation(
                             custom_marquee(
                                 definition, 
                                 height = 21, 
                                 font = "tom-thumb",
-                                color = "#B0B0E0",
-                                delay = 4,
-                                rate = 110
+                                color = theme["definition"],
+                                delay = 3,
+                                rate = 120,
+                                repeat = 2
                             )
                         )
                     )
@@ -135,6 +144,44 @@ def main():
             pad = (1, 0, 1, 0)
         )
     )
+
+def get_cfg_value(config, key, default):
+    value = config.get(key)
+    value = json.decode(value) if value else default
+    return value    
+
+def get_schema():
+    return schema.Schema(
+        version = "1",
+        fields = [
+            schema.Dropdown(
+                id = "theme",
+                name = "Color Theme",
+                desc = "Choose the color theme",
+                icon = "gear",
+                default = "0",
+                options = [
+                    schema.Option(display = THEME[i]["name"], value = str(i)) for i in range(len(THEME))
+                ]
+            )
+        ]
+    )    
+
+THEME = [
+    { "name": "Webster", "title": "#FFFFFF", "line": "771122FF", "definition": "#B0B0E0" },
+    { "name": "Coast", "title": "#DEEFB7", "line": "6188B9FF", "definition": "#BBBBBB" },
+    { "name": "Moss", "title": "#FFFFFF", "line": "414288FF", "definition": "#77AD78" },
+    { "name": "Tan", "title": "#D3B88C", "line": "9EBC9FFF", "definition": "#F4F2F3" },
+    { "name": "Thistle", "title": "#FFAFF0", "line": "392F5AFF", "definition": "#EEC8E0" },
+    { "name": "Maximum Yellow", "title": "#F5F749", "line": "F24236FF", "definition": "#F6F5AE" },
+    { "name": "Copper Penny", "title": "#BA6E6E", "line": "A63A50FF", "definition": "#F0E7D8" },
+    { "name": "Lavender Web", "title": "#ACB0BD", "line": "416165FF", "definition": "#D0CDD7" },
+    { "name": "Orange Red", "title": "#F26430", "line": "11AEEDFF", "definition": "#8983CA" },
+    { "name": "Sage", "title": "#BCBD8B", "line": "373D20FF", "definition": "#EFF1ED" },  
+    { "name": "Redwood", "title": "#8D5B4C", "line": "5A2A27FF", "definition": "#C4BBAF" }, 
+    { "name": "Asparagus", "title": "#88AB75", "line": "DE8F6EFF", "definition": "#FDF78F" },        
+    { "name": "Air Superiority Blue", "title": "#769FB6", "line": "1999B3FF", "definition": "#F9F7F1" },            
+]
 
 # Custom Marquee "Widget"
 #
@@ -158,7 +205,7 @@ def main():
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-def custom_marquee(text, width = 64, height = 32, rate = 100, color = "#fff", font = "tb-8", shadow = False, center = False, delay = 0, default_duration = 6):
+def custom_marquee(text, width = 64, height = 32, rate = 100, color = "#fff", font = "tb-8", shadow = False, center = False, delay = 0, default_duration = 6, repeat = 1):
     """
     Returns an array of frames that scrolls the text vertically like a marquee
 
@@ -184,6 +231,7 @@ def custom_marquee(text, width = 64, height = 32, rate = 100, color = "#fff", fo
       delay: The delay before the marquee begins scrolling
       default_duration: The default duration of the animation. If not specified the
         duration is calculated based on the above parameters
+      repeat: The number of times the animation should be repeated
 
     Returns:
         Array of widget frames that can be animated
@@ -205,8 +253,11 @@ def custom_marquee(text, width = 64, height = 32, rate = 100, color = "#fff", fo
         txt_width = font_width(font)
         txt_height = font_height(font)
 
-        chars_per_line = width // txt_width
-        lines = len(text) // chars_per_line
+        chars_per_line = width / txt_width
+        lines = int((len(text) / chars_per_line) + 0.5)
+
+        # print("%s (%d)" % (text, len(text)))
+        # print("cpl = %d, lines = %d" % (chars_per_line, lines))
 
         return (chars_per_line, lines)
 
@@ -257,7 +308,7 @@ def custom_marquee(text, width = 64, height = 32, rate = 100, color = "#fff", fo
         txt_len = len(txt)
         txt_width = font_width(font)
 
-        pad = max(0, (width - len(txt) * txt_width) // 2)
+        pad = max(0, (width - len(txt) * txt_width) / 2)
         return pad
 
     # Renders a column of text based on the specified text items
@@ -280,7 +331,7 @@ def custom_marquee(text, width = 64, height = 32, rate = 100, color = "#fff", fo
 
     # Calculates the number of frames required based on the duration and rate
     def duration(seconds):
-        return int((seconds * 1000) // rate)
+        return int((seconds * 1000) / rate)
 
     # Adds the required number of frames based on the duration
     def frames(f, child, duration):
@@ -291,7 +342,7 @@ def custom_marquee(text, width = 64, height = 32, rate = 100, color = "#fff", fo
 
     # Breaks up the text into multiple lines based on the width and the font
     # Returns a stack with the text and a shadow
-    def wrapped_text(items, width, height, color, offset, font, has_shadow, center):
+    def wrapped_text(items, width, height, color, offset, font, has_shadow, center, repeat):
         children = []
         if has_shadow:
             children.append(
@@ -317,11 +368,11 @@ def custom_marquee(text, width = 64, height = 32, rate = 100, color = "#fff", fo
     stats = font_metrics(text, font, width)
     lines = stats[1]
     txt_height = font_height(font)
-    max_lines = int(height // txt_height)
+    max_lines = int(height / txt_height)
     
     # Calculate the intial delay if the caller did not specify it
-    seconds_per_screen = ((height * rate) // 1000)
-    screens = max(1, lines // max_lines) + 1
+    seconds_per_screen = ((height * rate) / 1000)
+    screens = max(1, lines / max_lines) + 1
     if delay == 0:
         delay = seconds_per_screen
 
@@ -329,6 +380,7 @@ def custom_marquee(text, width = 64, height = 32, rate = 100, color = "#fff", fo
     items = split(text, width, height, font)
 
     # Will it fit on 1 screen?
+    # print("lines = %d, max_lines = %d" % (lines, max_lines))
     if lines < max_lines:
         seconds = default_duration
 
@@ -336,14 +388,14 @@ def custom_marquee(text, width = 64, height = 32, rate = 100, color = "#fff", fo
             return frames(
                 wrapped_frames,
                 render.Box(
-                    child = wrapped_text(items, width, height, color, 0, font, shadow, center)
+                    child = wrapped_text(items, width, height, color, 0, font, shadow, center, repeat)
                 ), duration(seconds)
             )
 
         else:
             return frames(
                 wrapped_frames,
-                wrapped_text(items, width, height, color, 0, font, shadow, center)
+                wrapped_text(items, width, height, color, 0, font, shadow, center, repeat)
                 , duration(seconds)
             )
     
@@ -351,11 +403,12 @@ def custom_marquee(text, width = 64, height = 32, rate = 100, color = "#fff", fo
 
     # Determine how long it will take to scroll through all of the text
     # (including the text going off the screen)
-    seconds = seconds_per_screen * screens + 1
+    seconds = seconds_per_screen * screens
 
-    wrapped_frames = frames(wrapped_frames, wrapped_text(items, width, height, color, 0, font, shadow, center), duration(delay))
-    for i in range(duration(seconds)):
-        wrapped_frames = frames(wrapped_frames, wrapped_text(items, width, height, color, -i, font, shadow, center), 1)
+    for i in range(repeat):
+        wrapped_frames = frames(wrapped_frames, wrapped_text(items, width, height, color, 0, font, shadow, center, repeat), duration(delay))
+        for i in range(duration(seconds)):
+            wrapped_frames = frames(wrapped_frames, wrapped_text(items, width, height, color, -i, font, shadow, center, repeat), 1)
 
     # print("Total seconds: %d" % (initial_delay + seconds))
     return wrapped_frames
